@@ -19,19 +19,37 @@
     .webcomic-viewer {
       width: 100%;
       max-width: 900px;
+      min-height: 600px;
       margin: auto;
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    h1, label, p {
+      text-align: center;
     }
     .comic-panel {
       text-align: center;
+      min-height: 400px; /* Fixed size to prevent buttons from moving */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
     }
     .comic-panel img {
       max-width: 100%;
       height: auto;
+      display: block;
+    }
+    .comic-panel iframe {
+      width: 100%;
+      height: 100%;
+      max-height: 400px;
     }
     .navigation button {
       margin: 5px;
@@ -45,6 +63,9 @@
     .navigation button:disabled {
       background-color: #ccc;
       cursor: not-allowed;
+    }
+    .center-buttons {
+      text-align: center;
     }
   </style>
 </head>
@@ -61,17 +82,14 @@
     </div>
     <div class="comic-panel">
       <img id="panelImage" alt="Comic Panel" />
-      <p id="panelIndicator"></p>
+      <iframe id="youtubeVideo" style="display: none;" frameborder="0" allowfullscreen></iframe>
     </div>
-    <div class="navigation">
+    <div class="navigation center-buttons">
       <button id="prevButton">Previous</button>
       <button id="nextButton">Next</button>
     </div>
-    <div>
+    <div class="center-buttons">
       <button id="toggleAnimation">Watch Motion Comic</button>
-      <div id="motionComic" style="display: none;">
-        <iframe id="youtubeVideo" width="100%" height="315" frameborder="0" allowfullscreen></iframe>
-      </div>
     </div>
   </div>
 
@@ -103,12 +121,10 @@
     const collectionSelect = document.getElementById('collection');
     const comicSelect = document.getElementById('comic');
     const panelImage = document.getElementById('panelImage');
-    const panelIndicator = document.getElementById('panelIndicator');
+    const youtubeVideo = document.getElementById('youtubeVideo');
     const prevButton = document.getElementById('prevButton');
     const nextButton = document.getElementById('nextButton');
     const toggleAnimation = document.getElementById('toggleAnimation');
-    const motionComic = document.getElementById('motionComic');
-    const youtubeVideo = document.getElementById('youtubeVideo');
 
     function updateCollectionOptions() {
       collectionSelect.innerHTML = '';
@@ -137,14 +153,17 @@
       const comicDetails = COMIC_COLLECTIONS[selectedCollection].comics[selectedComic];
       panelImage.src = `${comicDetails.panelBasePath}${currentPanel}.png`;
       panelImage.alt = `Panel ${currentPanel} of ${comicDetails.title}`;
-      panelIndicator.textContent = `Panel ${currentPanel} of ${comicDetails.panelCount}`;
+      panelImage.style.display = 'block';
+      youtubeVideo.style.display = 'none';
       prevButton.disabled = currentPanel === 1;
       nextButton.disabled = currentPanel === comicDetails.panelCount;
     }
 
-    function updateYoutubeVideo() {
+    function showYoutubeVideo() {
       const comicDetails = COMIC_COLLECTIONS[selectedCollection].comics[selectedComic];
       youtubeVideo.src = comicDetails.youtubeUrl;
+      youtubeVideo.style.display = 'block';
+      panelImage.style.display = 'none';
     }
 
     collectionSelect.addEventListener('change', () => {
@@ -153,14 +172,12 @@
       currentPanel = 1;
       updateComicOptions();
       updatePanel();
-      updateYoutubeVideo();
     });
 
     comicSelect.addEventListener('change', () => {
       selectedComic = comicSelect.value;
       currentPanel = 1;
       updatePanel();
-      updateYoutubeVideo();
     });
 
     prevButton.addEventListener('click', () => {
@@ -179,14 +196,19 @@
     });
 
     toggleAnimation.addEventListener('click', () => {
-      motionComic.style.display = motionComic.style.display === 'none' ? 'block' : 'none';
+      if (youtubeVideo.style.display === 'none') {
+        showYoutubeVideo();
+        toggleAnimation.textContent = 'View Comic Panels';
+      } else {
+        updatePanel();
+        toggleAnimation.textContent = 'Watch Motion Comic';
+      }
     });
 
     // Initialize
     updateCollectionOptions();
     updateComicOptions();
     updatePanel();
-    updateYoutubeVideo();
   </script>
 </body>
 </html>
